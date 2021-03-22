@@ -2,6 +2,7 @@ package org.launchcode.javawebdevtechjobspersistent.controllers;
 
 import org.launchcode.javawebdevtechjobspersistent.models.Employer;
 import org.launchcode.javawebdevtechjobspersistent.models.Job;
+import org.launchcode.javawebdevtechjobspersistent.models.Skill;
 import org.launchcode.javawebdevtechjobspersistent.models.data.EmployerRespository;
 import org.launchcode.javawebdevtechjobspersistent.models.data.JobRepository;
 import org.launchcode.javawebdevtechjobspersistent.models.data.SkillRepository;
@@ -22,7 +23,7 @@ import java.util.Optional;
 public class HomeController {
 
     @Autowired
-    private EmployerRespository employerRespository;
+    private EmployerRespository employerRepository;
 
     @Autowired
     private SkillRepository skillRepository;
@@ -42,7 +43,7 @@ public class HomeController {
     @GetMapping("add")
     public String displayAddJobForm(Model model) {
         model.addAttribute("title", "Add Job");
-        model.addAttribute("employers", employerRespository.findAll());
+        model.addAttribute("employers", employerRepository.findAll());
         model.addAttribute("skills", skillRepository.findAll());
         model.addAttribute(new Job());
         return "add";
@@ -58,10 +59,12 @@ public class HomeController {
             return "add";
         }
 
-        Optional<Employer> optEmployer = employerRespository.findById(employerId);
+        Optional<Employer> optEmployer = employerRepository.findById(employerId);
         Employer employer = optEmployer.get();
-
         newJob.setEmployer(employer);
+
+        List<Skill> skillObjs = (List<Skill>) skillRepository.findAllById(skills);
+        newJob.setSkills(skillObjs);
 
         jobRepository.save(newJob);
 
@@ -76,9 +79,7 @@ public class HomeController {
         if (optJob.isEmpty()) {
             return "index";
         } else {
-            Job job = optJob.get();
-
-            model.addAttribute("title", job.getName());
+            Job job = (Job) optJob.get();
             model.addAttribute("job", job);
 
             return "view";
